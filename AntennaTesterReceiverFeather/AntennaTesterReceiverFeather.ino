@@ -4,25 +4,9 @@
 
 static const uint32_t GPSBaud = 9600;
 
-/*WeMos D1          RFM9x Module
-  GPIO12 (D6) <----> MISO
-  GPIO13 (D7) <----> MOSI
-  GPIO14 (D5) <----> CLK
-  GPIO15 (D8) <----> DIO0/D2 OR DIO1/D3 OR DIO2/D4
-  GPIO16 (D0) <----> SEL Chip Select (depending on bottom solder PAD position)
-
-   WeMos D1         Shield Feature
-  GPIO5  (D1) <----> I2C SCL
-  GPIO4  (D2) <----> I2C SDA
-  GPIO0  (D3) <----> WS2812 LEDS
-  GPIO2  (D4) <----> Push Button
-  GPIO16 (D0) <----> RESET (depending on bottom solder PAD position)
-
-*/
-
-#define SS      D0
-#define RST     D0
-#define DI0     D8
+#define SS      A5
+#define RST     20
+#define DI0     21
 
 
 #define spreadingFactor 9
@@ -33,13 +17,12 @@ static const uint32_t GPSBaud = 9600;
 // The TinyGPS++ object
 TinyGPSPlus gps;
 
-// The serial connection to the GPS device
-HardwareSerial receiverSerial(1);
-HardwareSerial GPSserial(2);
+// Using Serial1 on M0 to communicate with U-Blox GPS
+HardwareSerial & GPSserial = Serial1;
 
 #define FREQUENCY 868.9E6
 
-#define LEDPIN 5
+#define LEDPIN 13
 
 
 double retFrequency;
@@ -170,7 +153,7 @@ void receivingMessage () {
 
 void initLoRa() {
   SPI.begin();
-  LoRa.setPins(D0, D0, D8);
+  LoRa.setPins(SS, RST, DI0);
   if (!LoRa.begin(FREQUENCY)) {
     Serial.println("Starting LoRa failed!");
     while (1) {
@@ -194,6 +177,7 @@ void initLoRa() {
 
 void setup() {
   Serial.begin(115200);
+  //while(!Serial.available()){}
   pinMode(LEDPIN, OUTPUT);
   digitalWrite(LEDPIN, 1);
   delay(1000);
